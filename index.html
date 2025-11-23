@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Global Social Media Analytics Dashboard</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <h1>Global Social Media Analytics Dashboard</h1>
+    <p class="muted">A simple static dashboard demo hosted with GitHub Pages.</p>
+  </header>
+
+  <main class="container">
+    <section class="cards">
+      <div class="card">
+        <h2>Total Mentions</h2>
+        <p class="big" id="mentions">—</p>
+      </div>
+      <div class="card">
+        <h2>Sentiment</h2>
+        <p class="big" id="sentiment">—</p>
+      </div>
+      <div class="card">
+        <h2>Top Country</h2>
+        <p class="big" id="topcountry">—</p>
+      </div>
+    </section>
+
+    <section class="charts">
+      <div class="chart-card">
+        <h3>Mentions Over Time</h3>
+        <canvas id="mentionsChart" height="120"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <h3>Platform Share</h3>
+        <canvas id="platformChart" height="120"></canvas>
+      </div>
+    </section>
+
+    <section class="table-card">
+      <h3>Top Posts</h3>
+      <table>
+        <thead>
+          <tr><th>Post</th><th>Platform</th><th>Engagement</th></tr>
+        </thead>
+        <tbody id="topPosts">
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <small>Hosted with GitHub Pages • © comet221</small>
+  </footer>
+
+  <script>
+    // Sample static data (replace with your real exports)
+    const data = {
+      mentions: 12540,
+      sentiment: 0.72, // positive ratio
+      topCountry: 'United States',
+      timeseries: {
+        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+        values: [1500, 1800, 2000, 2100, 1700, 1600, 1740]
+      },
+      platforms: {
+        labels: ['Twitter','Facebook','Instagram','Reddit'],
+        values: [5200, 3300, 2500, 1540]
+      },
+      topPosts: [
+        {text: 'Launch announcement', platform: 'Twitter', engagement: 2340},
+        {text: 'User story', platform: 'Facebook', engagement: 1890},
+        {text: 'Viral photo', platform: 'Instagram', engagement: 1210}
+      ]
+    };
+
+    // Render summary
+    document.getElementById('mentions').textContent = data.mentions.toLocaleString();
+    document.getElementById('sentiment').textContent = Math.round(data.sentiment * 100) + '% positive';
+    document.getElementById('topcountry').textContent = data.topCountry;
+
+    // Mentions over time chart
+    const ctx1 = document.getElementById('mentionsChart').getContext('2d');
+    new Chart(ctx1, {
+      type: 'line',
+      data: {
+        labels: data.timeseries.labels,
+        datasets: [{
+          label: 'Mentions',
+          data: data.timeseries.values,
+          borderColor: '#0366d6',
+          backgroundColor: 'rgba(3,102,214,0.08)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+
+    // Platform share chart
+    const ctx2 = document.getElementById('platformChart').getContext('2d');
+    new Chart(ctx2, {
+      type: 'doughnut',
+      data: {
+        labels: data.platforms.labels,
+        datasets: [{
+          data: data.platforms.values,
+          backgroundColor: ['#1DA1F2','#1877F2','#E1306C','#FF4500']
+        }]
+      },
+      options: { responsive: true }
+    });
+
+    // Top posts table
+    const tbody = document.getElementById('topPosts');
+    data.topPosts.forEach(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${p.text}</td><td>${p.platform}</td><td>${p.engagement.toLocaleString()}</td>`;
+      tbody.appendChild(tr);
+    });
+  </script>
+</body>
+</html>
