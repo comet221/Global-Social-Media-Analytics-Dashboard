@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<!-- saved from url=(0077)https://pratheek220355-social-media-growth-tracker.static.hf.space/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script>window.huggingface={variables:{"SPACE_CREATOR_USER_ID":"6921cb477b74cdb6ee1cdea5"}};</script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Social Media Analytics Dashboard</title>
+    
+    <link href="./Global Social Media Analytics Dashboard_files/all.min.css" rel="stylesheet">
+    <script src="./Global Social Media Analytics Dashboard_files/chart.js.download"></script>
+
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --insta-grad: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            --snap-grad: linear-gradient(45deg, #FFFC00, #FFD700);
+            --twitch-grad: linear-gradient(45deg, #6441a5, #2a0845);
+            --x-grad: linear-gradient(45deg, #000000, #333333);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-main);
+            background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #1a2a6c);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated Background */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Floating Dots */
+        .bg-shape {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            animation: float 10s infinite ease-in-out;
+            z-index: -1;
+        }
+        .shape-1 { width: 300px; height: 300px; top: 10%; left: 10%; animation-delay: 0s; }
+        .shape-2 { width: 200px; height: 200px; bottom: 20%; right: 10%; animation-delay: 2s; }
+        .shape-3 { width: 150px; height: 150px; top: 40%; right: 40%; animation-delay: 4s; }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-30px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f2027;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease;
+        }
+        .loader-icon { font-size: 4rem; margin-bottom: 20px; animation: pulse 1.5s infinite; }
+        .progress-container { width: 300px; height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+        .progress-bar { height: 100%; background: #00d2ff; width: 0%; transition: width 0.2s; }
+
+        /* Layout */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            opacity: 0; /* Hidden initially for fade-in */
+            animation: fadeInPage 1s forwards 0.5s;
+        }
+
+        @keyframes fadeInPage { to { opacity: 1; } }
+
+        /* Glassmorphism Utility */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover { transform: translateY(-5px); box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5); }
+
+        /* Header */
+        header { text-align: center; margin-bottom: 30px; }
+        header h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        header p { color: var(--text-muted); font-size: 1.1rem; }
+        .sub-header { font-size: 0.9rem; color: #00d2ff; margin-top: 5px; }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+        /* Left Sidebar (Country & Ranks) */
+        .sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+        /* Country Panel */
+        .country-panel { text-align: center; }
+        .country-flag { width: 80px; height: auto; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .bounce { animation: bounce 0.6s; }
+        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        .country-name { font-size: 1.8rem; font-weight: 600; }
+
+        /* Controls */
+        .controls-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .control-group { display: flex; gap: 10px; align-items: center; }
+        select, button {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            cursor: pointer;
+            outline: none;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+select:hover, button:hover { background: rgba(255,255,255,0.1); }
+        .btn-primary { background: linear-gradient(90deg, #00d2ff, #3a7bd5); border: none; font-weight: 600; }
+        .btn-primary:hover { box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); }
+
+        /* Platform Nav */
+        .platform-nav { display: flex; gap: 15px; justify-content: center; margin-bottom: 25px; flex-wrap: wrap; }
+        .plat-btn {
+            width: 60px; height: 60px;
+            border-radius: 12px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0.6;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .plat-btn:hover { transform: scale(1.1); opacity: 1; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+        .plat-btn.active { transform: scale(1.15); opacity: 1; border: 2px solid white; }
+        .p-insta { background: var(--insta-grad); }
+        .p-snap { background: var(--snap-grad); color: black; }
+        .p-twitch { background: var(--twitch-grad); }
+        .p-x { background: var(--x-grad); }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card { display: flex; align-items: center; gap: 15px; }
+        .stat-icon {
+            width: 50px; height: 50px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem;
+            color: #00d2ff;
+        }
+        .stat-info h3 { font-size: 1.8rem; font-weight: 700; }
+        .stat-info p { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Charts Section */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .chart-wrapper { height: 300px; position: relative; width: 100%; }
+        .chart-title { font-size: 1rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+
+        /* Rankings */
+        .rankings-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .rank-col h4 { margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; }
+        .rank-list { list-style: none; }
+        .rank-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .rank-item:hover { background: rgba(255,255,255,0.1); }
+        .rank-num {
+            width: 24px; height: 24px;
+            background: #333; border-radius: 50%;
+            font-size: 0.8rem;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold;
+        }
+        .rank-flag { width: 20px; border-radius: 3px; }
+        .rank-users { margin-left: auto; font-size: 0.9rem; color: #00d2ff; }
+
+        /* Notification */
+        .toast {
+            position: fixed;
+            top: 20px; right: -300px;
+            background: rgba(0, 210, 255, 0.9);
+            color: #000;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 1000;
+            transition: right 0.5s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .toast.show { right: 20px; }
+
+        @media (max-width: 768px) {
+            .platform-nav { gap: 10px; }
+            .plat-btn { width: 50px; height: 50px; font-size: 1.2rem; }
+            header h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+    <div class="bg-shape shape-3"></div>
+
+    
+
+    <div class="toast" id="toast">Data updated for Brazil</div>
+    <div class="container">
+        <header>
+            <app-logo><template shadowrootmode="open">
+      <style>
+        .logo-container {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 15px;
+          justify-content: center;
+        }
+        .world-flag {
+          width: 60px;
+          height: 60px;
+          border-radius: 10px;
+          object-fit: cover;
+          margin-right: 15px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+        .logo-text {
+font-size: 2rem;
+font-weight: 700;
+          background: linear-gradient(45deg, #fff, #a0a0a0);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .tagline {
+          font-size: 0.9rem;
+          color: #00d2ff;
+          margin-top: 5px;
+          text-align: center;
+          letter-spacing: 0.5px;
+        }
+      </style>
+      <div class="logo-container">
+        <img src="https://flagcdn.com/w80/un.png" alt="World Flag" class="world-flag">
+        <div class="logo-text">Social Pulse</div>
+      </div>
+<div class="tagline">Real-time data with interactive country exploration (2018-2025)</div>
+    </template></app-logo>
+        </header>
+<div class="platform-nav">
+            <div class="plat-btn p-insta active" onclick="filterPlatform(&#39;instagram&#39;)" title="Instagram"><i class="fab fa-instagram"></i></div>
+            <div class="plat-btn p-snap" onclick="filterPlatform(&#39;snapchat&#39;)" title="Snapchat"><i class="fab fa-snapchat-ghost"></i></div>
+            <div class="plat-btn p-twitch" onclick="filterPlatform(&#39;twitch&#39;)" title="Twitch"><i class="fab fa-twitch"></i></div>
+            <div class="plat-btn p-x" onclick="filterPlatform(&#39;twitter&#39;)" title="X (Twitter)">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                </svg>
+            </div>
+</div>
+
+        <div class="glass-card controls-bar">
+            <div class="control-group">
+                <label><i class="far fa-calendar-alt"></i> Year:</label>
+                <select id="year-select" onchange="handleYearChange()">
+                    <option value="2018">2018</option>
+                    <option value="2019">2019</option>
+                    <option value="2020">2020</option>
+                    <option value="2021">2021</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024" selected="">2024</option>
+                    <option value="2025">2025 (Proj)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label><i class="fas fa-globe"></i> Region:</label>
+                <select>
+                    <option>Global</option>
+                    <option>North America</option>
+                    <option>Europe</option>
+                    <option>Asia Pacific</option>
+                    <option>South America</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <button onclick="refreshData()" id="refresh-btn"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+                <button class="btn-primary" onclick="exportCSV()"><i class="fas fa-download"></i> Export Report</button>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <div class="sidebar">
+                <div class="glass-card country-panel">
+                    <img id="current-flag" src="./Global Social Media Analytics Dashboard_files/un.png" alt="Flag" class="country-flag">
+                    <h2 id="current-country-name" class="country-name">Global Overview</h2>
+                    <p id="current-country-desc" style="color: #ccc; margin-top: 5px; font-size: 0.9rem;">Aggregate world data</p>
+                </div>
+
+                </div>
+
+            <div class="main-content">
+                <div class="stats-grid">
+                    <div class="glass-card stat-card" style="transform: scale(1);">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <h3 id="stat-users">3.80B</h3>
+                            <p>Total Active Users</p>
+                        </div>
+                    </div>
+                    <div class="glass-card stat-card" style="transform: scale(1);">
+                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="stat-info">
+                            <h3 id="stat-growth">+6.6%</h3>
+                            <p>Annual Growth</p>
+                        </div>
+                    </div>
+                    <div class="glass-card stat-card" style="transform: scale(1);">
+                        <div class="stat-icon"><i class="fas fa-flag"></i></div>
+                        <div class="stat-info">
+                            <h3 id="stat-countries">195</h3>
+                            <p>Regions Analyzed</p>
+                        </div>
+                    </div>
+                    <div class="glass-card stat-card" style="transform: scale(1);">
+                        <div class="stat-icon"><i class="fas fa-mobile-alt"></i></div>
+                        <div class="stat-info">
+                            <h3 id="stat-mobile">83.9%</h3>
+                            <p>Mobile Usage</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="glass-card chart-wrapper">
+                        <div class="chart-title"><i class="fas fa-chart-pie"></i> Market Share (Users)</div>
+                        <canvas id="doughnutChart" width="563" height="323" style="display: block; box-sizing: border-box; height: 258.4px; width: 450.9px;"></canvas>
+                    </div>
+                    <div class="glass-card chart-wrapper">
+                        <div class="chart-title"><i class="fas fa-chart-bar"></i> Annual Growth Rate (%)</div>
+                        <canvas id="barChart" width="563" height="323" style="display: block; box-sizing: border-box; height: 258.4px; width: 450.9px;"></canvas>
+                    </div>
+                    <div class="glass-card chart-wrapper">
+                        <div class="chart-title"><i class="fas fa-project-diagram"></i> Engagement vs Users</div>
+                        <canvas id="scatterChart" width="563" height="323" style="display: block; box-sizing: border-box; height: 258.4px; width: 450.9px;"></canvas>
+                    </div>
+                    <div class="glass-card chart-wrapper">
+                        <div class="chart-title"><i class="fas fa-history"></i> Growth Trend (2018-2025)</div>
+                        <canvas id="lineChart" width="563" height="323" style="display: block; box-sizing: border-box; height: 258.4px; width: 450.9px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin-bottom: 15px;">Interactive Country Rankings - Click to Explore</h2>
+            <div class="rankings-container">
+                <div class="glass-card rank-col">
+                    <h4><i class="fab fa-instagram" style="color: #cc2366"></i> Instagram Leaders</h4>
+                    <ul class="rank-list" id="rank-instagram"><li class="rank-item">
+                        <div class="rank-num" style="color: #FFD700">1</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/us.png" class="rank-flag" alt="US">
+                        <span>United States</span>
+                        <span class="rank-users">180M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">2</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/in.png" class="rank-flag" alt="IN">
+                        <span>India</span>
+                        <span class="rank-users">179M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">3</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/jp.png" class="rank-flag" alt="JP">
+                        <span>Japan</span>
+                        <span class="rank-users">178M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">4</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/gb.png" class="rank-flag" alt="GB">
+                        <span>United Kingdom</span>
+                        <span class="rank-users">177M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">5</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/br.png" class="rank-flag" alt="BR">
+                        <span>Brazil</span>
+                        <span class="rank-users">176M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">6</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/de.png" class="rank-flag" alt="DE">
+                        <span>Germany</span>
+                        <span class="rank-users">174M</span>
+                    </li></ul>
+                </div>
+                <div class="glass-card rank-col">
+                    <h4><i class="fab fa-snapchat" style="color: #FFFC00"></i> Snapchat Leaders</h4>
+                    <ul class="rank-list" id="rank-snapchat"><li class="rank-item">
+                        <div class="rank-num" style="color: #FFD700">1</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/de.png" class="rank-flag" alt="DE">
+                        <span>Germany</span>
+                        <span class="rank-users">106M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">2</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/gb.png" class="rank-flag" alt="GB">
+                        <span>United Kingdom</span>
+                        <span class="rank-users">105M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">3</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/br.png" class="rank-flag" alt="BR">
+                        <span>Brazil</span>
+                        <span class="rank-users">104M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">4</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/jp.png" class="rank-flag" alt="JP">
+                        <span>Japan</span>
+                        <span class="rank-users">102M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">5</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/us.png" class="rank-flag" alt="US">
+                        <span>United States</span>
+                        <span class="rank-users">101M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">6</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/in.png" class="rank-flag" alt="IN">
+                        <span>India</span>
+                        <span class="rank-users">101M</span>
+                    </li></ul>
+                </div>
+                <div class="glass-card rank-col">
+                    <h4><i class="fab fa-twitch" style="color: #6441a5"></i> Twitch Leaders</h4>
+                    <ul class="rank-list" id="rank-twitch"><li class="rank-item">
+                        <div class="rank-num" style="color: #FFD700">1</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/us.png" class="rank-flag" alt="US">
+                        <span>United States</span>
+                        <span class="rank-users">49M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">2</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/gb.png" class="rank-flag" alt="GB">
+                        <span>United Kingdom</span>
+                        <span class="rank-users">46M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">3</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/jp.png" class="rank-flag" alt="JP">
+                        <span>Japan</span>
+                        <span class="rank-users">45M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">4</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/in.png" class="rank-flag" alt="IN">
+                        <span>India</span>
+                        <span class="rank-users">42M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">5</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/br.png" class="rank-flag" alt="BR">
+                        <span>Brazil</span>
+                        <span class="rank-users">42M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">6</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/de.png" class="rank-flag" alt="DE">
+                        <span>Germany</span>
+                        <span class="rank-users">41M</span>
+                    </li></ul>
+                </div>
+                <div class="glass-card rank-col">
+                    <h4><i class="fab fa-x-twitter" style="color: #fff"></i> X Leaders</h4>
+                    <ul class="rank-list" id="rank-twitter"><li class="rank-item">
+                        <div class="rank-num" style="color: #FFD700">1</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/us.png" class="rank-flag" alt="US">
+                        <span>United States</span>
+                        <span class="rank-users">73M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">2</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/jp.png" class="rank-flag" alt="JP">
+                        <span>Japan</span>
+                        <span class="rank-users">73M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">3</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/de.png" class="rank-flag" alt="DE">
+                        <span>Germany</span>
+                        <span class="rank-users">72M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">4</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/gb.png" class="rank-flag" alt="GB">
+                        <span>United Kingdom</span>
+                        <span class="rank-users">71M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">5</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/in.png" class="rank-flag" alt="IN">
+                        <span>India</span>
+                        <span class="rank-users">69M</span>
+                    </li><li class="rank-item">
+                        <div class="rank-num" style="color: white">6</div>
+                        <img src="./Global Social Media Analytics Dashboard_files/br.png" class="rank-flag" alt="BR">
+                        <span>Brazil</span>
+                        <span class="rank-users">67M</span>
+                    </li></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+  <script src="./Global Social Media Analytics Dashboard_files/logo.js.download"></script>
+  <script>
+// --- Configuration & State ---
+        const startYear = 2018;
+        const endYear = 2025;
+        let currentYear = 2024;
+        let currentCountryCode = 'GLOBAL';
+        let activePlatform = 'instagram'; // Default visual selection
+
+        // Chart Instances
+        let charts = {
+            doughnut: null,
+            bar: null,
+            scatter: null,
+            line: null
+        };
+
+        // --- Data Generation ---
+        // We will generate a mock database for countries and years
+        const countryList = [
+            { code: 'GLOBAL', name: 'Global Overview', desc: 'Aggregate world data', flag: 'https://flagcdn.com/w320/un.png' },
+            { code: 'US', name: 'United States', desc: 'Market Saturation: High', flag: 'https://flagcdn.com/w320/us.png' },
+            { code: 'IN', name: 'India', desc: 'Fastest growing digital market', flag: 'https://flagcdn.com/w320/in.png' },
+            { code: 'BR', name: 'Brazil', desc: 'High engagement metrics', flag: 'https://flagcdn.com/w320/br.png' },
+            { code: 'DE', name: 'Germany', desc: 'Strong privacy focus', flag: 'https://flagcdn.com/w320/de.png' },
+            { code: 'GB', name: 'United Kingdom', desc: 'Steady annual growth', flag: 'https://flagcdn.com/w320/gb.png' },
+            { code: 'JP', name: 'Japan', desc: 'Unique platform preference (X)', flag: 'https://flagcdn.com/w320/jp.png' }
+        ];
+
+        const platforms = ['instagram', 'snapchat', 'twitch', 'twitter'];
+        const platformColors = {
+            instagram: '#e1306c',
+            snapchat: '#FFFC00',
+            twitch: '#9146FF',
+            twitter: '#ffffff'
+        };
+
+        const db = {};
+
+        function generateData() {
+            countryList.forEach(c => {
+                db[c.code] = {
+                    info: c,
+                    years: {}
+                };
+
+                for (let y = startYear; y <= endYear; y++) {
+                    let baseMultiplier = c.code === 'GLOBAL' ? 10 : 1;
+                    // Random variations to make charts look interesting
+                    db[c.code].years[y] = {
+                        instagram: randomStats(y, 150 * baseMultiplier, 5),
+                        snapchat: randomStats(y, 80 * baseMultiplier, 8),
+                        twitch: randomStats(y, 30 * baseMultiplier, 12),
+                        twitter: randomStats(y, 60 * baseMultiplier, 3)
+                    };
+                }
+            });
+        }
+
+        function randomStats(year, baseUsers, baseGrowth) {
+            // Simple algo to simulate growth over years
+            const yearFactor = (year - startYear) * 0.5;
+            const users = Math.floor(baseUsers + (baseUsers * (baseGrowth/100) * yearFactor) + (Math.random() * 10));
+            return {
+                users: users, // In Millions
+                growth: (baseGrowth + (Math.random() * 4 - 2)).toFixed(1), // Percentage
+                engagement: (Math.random() * 5 + 2).toFixed(1), // Percentage
+                mobile: (Math.random() * 10 + 80).toFixed(1) // Percentage
+            };
+        }
+
+        // --- Logic & Interactivity ---
+
+        function init() {
+            // 1. Generate Data
+            generateData();
+
+            // 2. Loading Screen Animation
+            const progressBar = document.getElementById('progress-bar');
+            const loadingScreen = document.getElementById('loading-screen');
+            
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => loadingScreen.remove(), 800);
+                    
+                    // Initialize Charts after loading
+                    initCharts();
+                    updateDashboard();
+                } else {
+                    width += 2;
+                    progressBar.style.width = width + '%';
+                }
+            }, 20);
+        }
+
+        function handleYearChange() {
+            const select = document.getElementById('year-select');
+            currentYear = parseInt(select.value);
+            updateDashboard();
+        }
+
+        function filterPlatform(plat) {
+            activePlatform = plat;
+            
+            // Update visuals
+            document.querySelectorAll('.plat-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.querySelector(`.plat-btn[onclick="filterPlatform('${plat}')"]`);
+            if(activeBtn) activeBtn.classList.add('active');
+
+            // We could filter charts to only show one, but usually comparisons are better. 
+            // Let's just trigger an update which might highlight/focus logic if we wanted deeper complexity.
+            // For this dashboard, clicking a platform mainly sets the visual state, 
+            // but I will make it highlight that dataset in the Line Chart.
+            updateCharts();
+        }
+
+        function selectCountry(code) {
+            currentCountryCode = code;
+            
+            // Animation for flag
+            const flagImg = document.getElementById('current-flag');
+            flagImg.classList.remove('bounce');
+            void flagImg.offsetWidth; // trigger reflow
+            flagImg.classList.add('bounce');
+
+            // Toast Notification
+            const toast = document.getElementById('toast');
+            const cName = db[code].info.name;
+            toast.textContent = `Data updated for ${cName}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+
+            updateDashboard();
+        }
+
+        function refreshData() {
+            const btn = document.getElementById('refresh-btn');
+            const icon = btn.querySelector('i');
+            icon.classList.add('fa-spin');
+            
+            // Simulate fetch
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+                // In a real app, we would fetch new data here.
+                // For demo, we just re-render.
+                updateDashboard();
+            }, 1000);
+        }
+
+        function updateDashboard() {
+            const data = db[currentCountryCode];
+            const yearData = data.years[currentYear];
+
+            // 1. Update Country Panel
+            document.getElementById('current-flag').src = data.info.flag;
+            document.getElementById('current-country-name').textContent = data.info.name;
+            document.getElementById('current-country-desc').textContent = data.info.desc;
+
+            // 2. Update Stats Cards (Aggregation of all platforms for simplicity)
+            let totalUsers = 0;
+            let avgGrowth = 0;
+            let avgMobile = 0;
+            
+            platforms.forEach(p => {
+                totalUsers += yearData[p].users;
+                avgGrowth += parseFloat(yearData[p].growth);
+                avgMobile += parseFloat(yearData[p].mobile);
+            });
+            
+            // Card Animation
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.style.transform = "scale(0.98)";
+                setTimeout(() => card.style.transform = "scale(1)", 200);
+            });
+
+            document.getElementById('stat-users').textContent = (totalUsers > 1000) ? (totalUsers/1000).toFixed(2) + "B" : totalUsers + "M";
+            document.getElementById('stat-growth').textContent = "+" + (avgGrowth / 4).toFixed(1) + "%";
+            document.getElementById('stat-countries').textContent = currentCountryCode === 'GLOBAL' ? '195' : '1';
+            document.getElementById('stat-mobile').textContent = (avgMobile / 4).toFixed(1) + "%";
+
+            // 3. Update Charts
+            updateCharts();
+
+            // 4. Update Rankings List (Only needs to happen if year changes or initial load, but doing here is safe)
+            renderRankings();
+        }
+
+        function initCharts() {
+            Chart.defaults.color = '#ccc';
+            Chart.defaults.font.family = "'Segoe UI', sans-serif";
+
+            const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
+            const ctxBar = document.getElementById('barChart').getContext('2d');
+            const ctxScatter = document.getElementById('scatterChart').getContext('2d');
+            const ctxLine = document.getElementById('lineChart').getContext('2d');
+
+            charts.doughnut = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: { labels: [], datasets: [] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '60%' }
+            });
+
+            charts.bar = new Chart(ctxBar, {
+                type: 'bar',
+                data: { labels: [], datasets: [] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+            });
+
+            charts.scatter = new Chart(ctxScatter, {
+                type: 'scatter',
+                data: { datasets: [] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.x}M Users, ${ctx.raw.y}% Eng.` } } } }
+            });
+
+            charts.line = new Chart(ctxLine, {
+                type: 'line',
+                data: { labels: [], datasets: [] },
+                options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, elements: { line: { tension: 0.4 } } }
+            });
+        }
+
+        function updateCharts() {
+            const data = db[currentCountryCode].years[currentYear];
+            
+            // Prepare Data Arrays
+            const pLabels = ['Instagram', 'Snapchat', 'Twitch', 'X'];
+            const pKeys = ['instagram', 'snapchat', 'twitch', 'twitter'];
+            const userVals = pKeys.map(k => data[k].users);
+            const growthVals = pKeys.map(k => data[k].growth);
+            
+            // Colors
+            const bgColors = [platformColors.instagram, platformColors.snapchat, platformColors.twitch, platformColors.twitter];
+
+            // 1. Doughnut (Market Share)
+            charts.doughnut.data.labels = pLabels;
+            charts.doughnut.data.datasets = [{
+                data: userVals,
+                backgroundColor: bgColors,
+                borderColor: 'transparent'
+            }];
+            charts.doughnut.update();
+
+            // 2. Bar (Growth)
+            charts.bar.data.labels = pLabels;
+            charts.bar.data.datasets = [{
+                label: 'Growth %',
+                data: growthVals,
+                backgroundColor: bgColors,
+                borderRadius: 5
+            }];
+            charts.bar.update();
+
+            // 3. Scatter (Engagement vs Users)
+            charts.scatter.data.datasets = pKeys.map((key, index) => ({
+                label: pLabels[index],
+                data: [{ x: data[key].users, y: data[key].engagement }],
+                backgroundColor: bgColors[index],
+                borderColor: 'white',
+                borderWidth: 1,
+                pointRadius: 8,
+                pointHoverRadius: 10
+            }));
+            charts.scatter.update();
+
+            // 4. Line (Historical Trends 2018-2025)
+            const yearsLabel = [];
+            for(let y=startYear; y<=endYear; y++) yearsLabel.push(y);
+            
+            const historicalDatasets = pKeys.map((key, index) => {
+                const trendData = [];
+                for(let y=startYear; y<=endYear; y++) {
+                    trendData.push(db[currentCountryCode].years[y][key].users);
+                }
+                // Visual trick: if this is the "activePlatform" from nav buttons, make it opaque, others slightly transparent
+                const isFocused = (activePlatform === key || activePlatform === 'twitter' && key === 'twitter'); // simplify match
+                
+                return {
+                    label: pLabels[index],
+                    data: trendData,
+                    borderColor: bgColors[index],
+                    backgroundColor: bgColors[index] + '20', // hex transparency
+                    fill: true,
+                    borderWidth: 2
+                };
+            });
+
+            charts.line.data.labels = yearsLabel;
+            charts.line.data.datasets = historicalDatasets;
+            charts.line.update();
+        }
+
+        function renderRankings() {
+            const pKeys = ['instagram', 'snapchat', 'twitch', 'twitter'];
+            
+            pKeys.forEach(plat => {
+                // 1. Create list of {country, users} excluding Global
+                let list = countryList
+                    .filter(c => c.code !== 'GLOBAL')
+                    .map(c => {
+                        return {
+                            ...c,
+                            users: db[c.code].years[currentYear][plat].users
+                        };
+                    });
+                
+                // 2. Sort desc
+                list.sort((a, b) => b.users - a.users);
+
+                // 3. Render
+                const ul = document.getElementById(`rank-${plat}`);
+                ul.innerHTML = '';
+                
+                list.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'rank-item';
+                    li.onclick = () => selectCountry(item.code);
+                    li.innerHTML = `
+                        <div class="rank-num" style="color: ${index === 0 ? '#FFD700' : 'white'}">${index + 1}</div>
+                        <img src="${item.flag}" class="rank-flag" alt="${item.code}">
+                        <span>${item.name}</span>
+                        <span class="rank-users">${item.users}M</span>
+                    `;
+                    ul.appendChild(li);
+                });
+            });
+        }
+
+        function exportCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Country,Year,Platform,Users(M),Growth(%),Engagement(%),Mobile(%)\n";
+
+            for (const [code, data] of Object.entries(db)) {
+                for (let y = startYear; y <= endYear; y++) {
+                    platforms.forEach(p => {
+                        const row = [
+                            data.info.name,
+                            y,
+                            p,
+                            data.years[y][p].users,
+                            data.years[y][p].growth,
+                            data.years[y][p].engagement,
+                            data.years[y][p].mobile
+                        ];
+                        csvContent += row.join(",") + "\n";
+                    });
+                }
+            }
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            const fileName = `social_media_analytics_${currentCountryCode}_${currentYear}.csv`;
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Start App
+        window.onload = init;
+
+    </script>
+
+</body></html>
